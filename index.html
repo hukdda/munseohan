@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>문서한장</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <style>
+    :root{
+      --bg:#f3f4f6;--card:#fff;--text:#111827;--muted:#6b7280;--line:#e5e7eb;
+      --primary:#111827;--soft:#eef0f3;--danger:#b91c1c;--ok:#166534;--radius:20px;
+    }
+    *{box-sizing:border-box}
+    [hidden]{display:none!important}
+    html{background:var(--bg)}
+    body{margin:0;font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;background:var(--bg);color:var(--text)}
+    button,input,textarea,select{font:inherit}
+    button{cursor:pointer}
+    .app{max-width:760px;margin:0 auto;min-height:100vh;padding:14px 14px 112px}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 14px}
+    .brand{font-size:24px;font-weight:900;letter-spacing:-.6px}
+    .sub{font-size:13px;color:var(--muted);margin-top:2px}
+    .top-actions{display:flex;gap:8px}
+    .mini{border:1px solid var(--line);background:#fff;border-radius:13px;padding:10px 12px;font-weight:800;white-space:nowrap}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:17px;margin-bottom:13px;box-shadow:0 4px 20px rgba(17,24,39,.04)}
+    .title{font-size:18px;font-weight:900;margin-bottom:12px;letter-spacing:-.3px}
+    .step{display:inline-flex;width:26px;height:26px;border-radius:9px;background:var(--primary);color:#fff;align-items:center;justify-content:center;font-size:14px;margin-right:7px}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+    .docbtn{border:1px solid var(--line);background:#fff;border-radius:16px;padding:17px 8px;font-weight:900;min-height:70px;font-size:17px}
+    .docbtn.active{border:2px solid var(--primary);background:#f9fafb}
+    label{display:block;font-size:13px;font-weight:800;margin:10px 0 6px}
+    input,textarea,select{width:100%;border:1px solid var(--line);border-radius:13px;padding:13px 14px;background:#fff;color:var(--text);outline:none}
+    input:focus,textarea:focus,select:focus{border-color:#6b7280;box-shadow:0 0 0 3px rgba(17,24,39,.06)}
+    textarea{min-height:72px;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .hint{font-size:12px;color:var(--muted);margin-top:7px;line-height:1.45}
+    .required{color:var(--danger)}
+    .item-card{border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:9px;background:#fff}
+    .item-top{display:grid;grid-template-columns:1fr 40px;gap:8px}
+    .item-bottom{display:grid;grid-template-columns:.65fr 1fr 1fr;gap:8px;margin-top:8px;align-items:end}
+    .item-bottom label{margin:0 0 5px;font-size:11px;color:var(--muted)}
+    .item-amount{height:46px;border-radius:13px;background:#f7f7f8;display:flex;align-items:center;justify-content:flex-end;padding:0 12px;font-weight:900;overflow:hidden;white-space:nowrap}
+    .iconbtn{border:0;background:#f3f4f6;border-radius:12px;height:45px;font-size:22px;color:#4b5563}
+    .two-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .softbtn,.dashbtn{width:100%;border:1px solid var(--line);background:#fff;border-radius:13px;padding:12px;font-weight:900}
+    .dashbtn{border-style:dashed}
+    .totals{margin-top:13px;border-top:1px solid var(--line);padding-top:10px}
+    .total-line{display:flex;justify-content:space-between;padding:5px 0}
+    .total-line.big{font-size:21px;font-weight:900;padding-top:8px}
+    .option-line{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:14px;padding:12px 13px;margin-top:10px}
+    .option-title{font-weight:900}
+    .option-sub{font-size:12px;color:var(--muted);margin-top:2px}
+    .switch{position:relative;width:50px;height:30px;flex:0 0 auto}
+    .switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;inset:0;background:#d1d5db;border-radius:999px;transition:.2s}
+    .slider:before{content:"";position:absolute;width:24px;height:24px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 2px 5px rgba(0,0,0,.2)}
+    .switch input:checked + .slider{background:var(--primary)}
+    .switch input:checked + .slider:before{transform:translateX(20px)}
+    .photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+    .photo{position:relative;aspect-ratio:1;border-radius:13px;overflow:hidden;background:#eef0f3}
+    .photo img{width:100%;height:100%;object-fit:cover}
+    .photo button{position:absolute;right:5px;top:5px;border:0;background:rgba(0,0,0,.68);color:#fff;width:27px;height:27px;border-radius:50%;font-weight:900}
+    .actions{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom));z-index:20}
+    .actions-inner{max-width:760px;margin:0 auto;display:grid;grid-template-columns:.75fr .85fr 1.4fr;gap:8px}
+    .primary,.secondary{border:0;border-radius:15px;padding:15px 10px;font-weight:900}
+    .primary{background:var(--primary);color:#fff}
+    .secondary{background:var(--soft);color:#111827}
+    dialog{border:0;border-radius:22px;width:min(720px,calc(100% - 22px));padding:0;box-shadow:0 18px 90px rgba(0,0,0,.3);max-height:90vh;overflow:auto}
+    dialog::backdrop{background:rgba(0,0,0,.5)}
+    .dialog-body{padding:18px}
+    .dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:0 18px 18px;position:sticky;bottom:0;background:#fff}
+    .notice{padding:12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;font-size:13px;color:#9a3412;line-height:1.4}
+    .stamp-box{border:1px dashed #9ca3af;border-radius:15px;padding:12px;margin-top:9px;display:grid;grid-template-columns:92px 1fr;gap:12px;align-items:center}
+    .stamp-preview{width:92px;height:92px;border:1px solid var(--line);border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--muted);font-size:12px;text-align:center}
+    .stamp-preview img{max-width:100%;max-height:100%;object-fit:contain}
+    .menu-list{display:grid;gap:8px}
+    .menu-btn{border:1px solid var(--line);background:#fff;border-radius:14px;padding:14px;text-align:left;font-weight:900}
+    .menu-btn small{display:block;color:var(--muted);font-weight:500;margin-top:4px}
+    .danger{color:var(--danger)}
+    .saved-list{display:grid;gap:8px;max-height:50vh;overflow:auto}
+    .saved-item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff}
+    .saved-item strong{display:block}
+    .saved-item span{font-size:12px;color:var(--muted)}
+    .saved-item button{border:0;background:var(--primary);color:#fff;border-radius:11px;padding:9px 12px;font-weight:900}
+    .empty{padding:24px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:14px}
+    .toast{position:fixed;left:50%;bottom:104px;transform:translateX(-50%) translateY(20px);background:#111827;color:#fff;padding:11px 16px;border-radius:999px;font-size:13px;font-weight:800;opacity:0;pointer-events:none;transition:.2s;z-index:50;white-space:nowrap}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .loading{position:fixed;inset:0;background:rgba(255,255,255,.84);backdrop-filter:blur(4px);z-index:60;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;font-weight:900}
+    .loading.show{display:flex}
+    .spinner{width:34px;height:34px;border:4px solid #d1d5db;border-top-color:#111827;border-radius:50%;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    #renderArea{position:fixed;left:-10000px;top:0;pointer-events:none}
+    @media(max-width:560px){
+      .app{padding:11px 11px 112px}.brand{font-size:22px}.mini{padding:9px 10px}
+      .grid3{grid-template-columns:1fr}.docbtn{min-height:56px;padding:13px}.row{grid-template-columns:1fr}
+      .item-bottom{grid-template-columns:.6fr 1fr 1fr}.photos{grid-template-columns:repeat(3,1fr)}
+      .actions-inner{grid-template-columns:.7fr .8fr 1.35fr}.primary,.secondary{padding:14px 7px;font-size:14px}
+      .stamp-box{grid-template-columns:82px 1fr}.stamp-preview{width:82px;height:82px}
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="top">
+      <div>
+        <div class="brand">문서한장</div>
+        <div class="sub">견적서 · 발주서 · 거래명세표</div>
+      </div>
+      <div class="top-actions">
+        <button class="mini" id="companyBtn">내 업체</button>
+        <button class="mini" id="menuBtn" aria-label="더보기">⋯</button>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="title"><span class="step">1</span>문서를 고르세요</div>
+      <div class="grid3" id="docButtons">
+        <button class="docbtn active" data-doc="견적서">견적서</button>
+        <button class="docbtn" data-doc="발주서">발주서</button>
+        <button class="docbtn" data-doc="거래명세표">거래명세표</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="title"><span class="step">2</span>받는 사람</div>
+      <label>이름 또는 업체명 <span class="required">*</span></label>
+      <input id="customerName" placeholder="예: 홍길동 또는 ○○상사" autocomplete="organization" />
+      <div class="row">
+        <div><label>연락처</label><input id="customerPhone" inputmode="tel" placeholder="선택" /></div>
+        <div><label>사업자번호</label><input id="customerBiz" inputmode="numeric" placeholder="선택" maxlength="12" /></div>
+      </div>
+      <label>주소</label>
+      <input id="customerAddress" placeholder="선택" />
+    </section>
+
+    <section class="card">
+      <div class="title"><span class="step">3</span>품목과 금액</div>
+      <div id="items"></div>
+      <div class="two-actions">
+        <button class="dashbtn" id="addItem">＋ 직접 추가</button>
+        <button class="softbtn" id="savedItemsBtn">자주 쓰는 품목</button>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <div>
+          <label>부가세</label>
+          <select id="vatMode">
+            <option value="none">없음</option>
+            <option value="included">포함</option>
+            <option value="separate">별도</option>
+          </select>
+        </div>
+        <div><label>문서 날짜</label><input id="docDate" type="date" /></div>
+      </div>
+      <div class="totals">
+        <div class="total-line"><span>공급가액</span><strong id="supplyTotal">0원</strong></div>
+        <div class="total-line"><span>부가세</span><strong id="vatTotal">0원</strong></div>
+        <div class="total-line big"><span>합계</span><span id="grandTotal">0원</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="title"><span class="step">4</span>필요한 것만 넣으세요</div>
+      <label>메모</label>
+      <textarea id="memo" placeholder="없으면 비워두세요"></textarea>
+
+      <div class="option-line" id="stampOption" hidden>
+        <div><div class="option-title">직인 넣기</div><div class="option-sub">등록한 직인이 대표자명 옆에 들어갑니다.</div></div>
+        <label class="switch"><input type="checkbox" id="useStamp" checked /><span class="slider"></span></label>
+      </div>
+
+      <input id="photoInput" type="file" accept="image/*" multiple hidden />
+      <button class="softbtn" id="photoBtn" style="margin-top:10px">사진 첨부하기 (선택)</button>
+      <div class="photos" id="photoPreview"></div>
+      <div class="hint">사진을 넣으면 문서 뒤쪽에 자동으로 붙습니다. 사진이 없으면 문서만 만들어집니다.</div>
+    </section>
+  </main>
+
+  <div class="actions">
+    <div class="actions-inner">
+      <button class="secondary" id="resetBtn">새로</button>
+      <button class="secondary" id="excelBtn">엑셀</button>
+      <button class="primary" id="pdfBtn">PDF 저장·보내기</button>
+    </div>
+  </div>
+
+  <dialog id="companyDialog">
+    <div class="dialog-body">
+      <div class="title">내 업체 정보</div>
+      <div class="notice">한 번 저장하면 다음에도 그대로 나옵니다. 사업자등록번호는 반드시 입력해야 합니다.</div>
+      <label>상호 <span class="required">*</span></label>
+      <input id="companyName" placeholder="예: 클린창호" />
+      <div class="row">
+        <div><label>대표자명 <span class="required">*</span></label><input id="companyOwner" /></div>
+        <div><label>사업자등록번호 <span class="required">*</span></label><input id="companyBiz" inputmode="numeric" maxlength="12" placeholder="000-00-00000" /></div>
+      </div>
+      <label>사업장 주소 <span class="required">*</span></label>
+      <input id="companyAddress" />
+      <div class="row">
+        <div><label>전화번호</label><input id="companyPhone" inputmode="tel" /></div>
+        <div><label>계좌번호</label><input id="companyAccount" placeholder="선택" /></div>
+      </div>
+
+      <label style="margin-top:16px">직인 이미지 <span style="font-weight:500;color:var(--muted)">(선택)</span></label>
+      <div class="stamp-box">
+        <div class="stamp-preview" id="stampPreview">직인 없음</div>
+        <div>
+          <input id="stampInput" type="file" accept="image/*" hidden />
+          <button class="softbtn" id="stampSelectBtn" type="button">사진에서 직인 불러오기</button>
+          <button class="softbtn danger" id="stampRemoveBtn" type="button" style="margin-top:7px;display:none">직인 지우기</button>
+          <div class="hint">선택한 이미지를 모양 그대로 저장해 문서에 넣습니다.</div>
+        </div>
+      </div>
+    </div>
+    <div class="dialog-actions">
+      <button class="secondary" id="closeCompany">닫기</button>
+      <button class="primary" id="saveCompany">저장</button>
+    </div>
+  </dialog>
+
+  <dialog id="menuDialog">
+    <div class="dialog-body">
+      <div class="title">더보기</div>
+      <div class="menu-list">
+        <button class="menu-btn" id="allHistoryExcel">전체 거래내역 엑셀 받기<small id="historyCount">저장된 문서 0건</small></button>
+        <button class="menu-btn" id="importItemsBtn">품목 엑셀 불러오기<small>품목명과 단가를 한 번에 저장합니다.</small></button>
+        <button class="menu-btn" id="backupBtn">내 정보 백업하기<small>업체정보·직인·품목·거래내역을 파일로 보관합니다.</small></button>
+        <button class="menu-btn" id="restoreBtn">백업 불러오기<small>새 휴대폰이나 컴퓨터에서 복원합니다.</small></button>
+        <button class="menu-btn danger" id="clearDataBtn">모든 저장정보 지우기</button>
+      </div>
+      <input id="itemsFileInput" type="file" accept=".xlsx,.csv,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden />
+      <input id="backupFileInput" type="file" accept=".json,application/json" hidden />
+    </div>
+    <div class="dialog-actions" style="grid-template-columns:1fr"><button class="secondary" id="closeMenu">닫기</button></div>
+  </dialog>
+
+  <dialog id="savedItemsDialog">
+    <div class="dialog-body">
+      <div class="title">자주 쓰는 품목</div>
+      <button class="softbtn" id="saveCurrentItems">현재 입력한 품목 저장</button>
+      <div class="saved-list" id="savedItemsList" style="margin-top:10px"></div>
+    </div>
+    <div class="dialog-actions" style="grid-template-columns:1fr"><button class="secondary" id="closeSavedItems">닫기</button></div>
+  </dialog>
+
+  <div class="toast" id="toast"></div>
+  <div class="loading" id="loading"><div class="spinner"></div><div id="loadingText">문서를 만들고 있습니다</div></div>
+  <div id="renderArea" aria-hidden="true"></div>
+
+<script>
+(() => {
+  'use strict';
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const KEYS = {
+    company:'simpledocs_v2_company', items:'simpledocs_v2_items', history:'simpledocs_v2_history'
+  };
+  let selectedDoc = '견적서';
+  let photos = [];
+  let currentDocNo = makeDocNo();
+  let pendingStamp = '';
+
+  const els = {
+    items:$('#items'), customerName:$('#customerName'), customerPhone:$('#customerPhone'),
+    customerBiz:$('#customerBiz'), customerAddress:$('#customerAddress'), vatMode:$('#vatMode'),
+    docDate:$('#docDate'), memo:$('#memo'), photoInput:$('#photoInput'), photoPreview:$('#photoPreview'),
+    companyDialog:$('#companyDialog'), menuDialog:$('#menuDialog'), savedItemsDialog:$('#savedItemsDialog'),
+    stampOption:$('#stampOption'), useStamp:$('#useStamp'), loading:$('#loading'), loadingText:$('#loadingText')
+  };
+
+  function today(){ return new Date().toISOString().slice(0,10); }
+  function makeDocNo(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${String(Date.now()).slice(-5)}`; }
+  function number(v){ return Number(String(v ?? '').replace(/[^0-9.-]/g,'')) || 0; }
+  function won(v){ return Math.round(v).toLocaleString('ko-KR')+'원'; }
+  function escapeXml(s=''){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&apos;','"':'&quot;'}[c])); }
+  function safeName(s='문서'){ return String(s).replace(/[\\/:*?"<>|]/g,'_').trim() || '문서'; }
+  function formatBiz(value){ const n=String(value).replace(/\D/g,'').slice(0,10); if(n.length<=3)return n;if(n.length<=5)return `${n.slice(0,3)}-${n.slice(3)}`;return `${n.slice(0,3)}-${n.slice(3,5)}-${n.slice(5)}`; }
+  function toast(msg){ const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),1800); }
+  function setLoading(show,text='문서를 만들고 있습니다'){ els.loadingText.textContent=text;els.loading.classList.toggle('show',show); }
+  function readJson(key, fallback){ try{return JSON.parse(localStorage.getItem(key)||'')||fallback}catch{return fallback} }
+  function writeJson(key,val){ localStorage.setItem(key,JSON.stringify(val)); }
+
+  els.docDate.value=today();
+  ['#companyBiz','#customerBiz'].forEach(sel=>$(sel).addEventListener('input',e=>e.target.value=formatBiz(e.target.value)));
+
+  function addItem(data={}){
+    const row=document.createElement('div'); row.className='item-card';
+    row.innerHTML=`
+      <div class="item-top">
+        <input class="item-name" placeholder="품목명" value="${String(data.name||'').replace(/"/g,'&quot;')}">
+        <button class="iconbtn" type="button" aria-label="삭제">×</button>
+      </div>
+      <div class="item-bottom">
+        <div><label>수량</label><input class="item-qty" inputmode="decimal" value="${data.qty ?? 1}" placeholder="1"></div>
+        <div><label>단가</label><input class="item-price" inputmode="numeric" value="${data.price ?? ''}" placeholder="0"></div>
+        <div><label>금액</label><div class="item-amount">0원</div></div>
+      </div>`;
+    row.querySelectorAll('input').forEach(i=>i.addEventListener('input',calc));
+    row.querySelector('button').onclick=()=>{ if($$('.item-card').length===1){row.querySelector('.item-name').value='';row.querySelector('.item-qty').value='1';row.querySelector('.item-price').value='';}else row.remove();calc(); };
+    els.items.appendChild(row);calc();
+  }
+
+  function collectItems(){
+    return $$('.item-card').map(row=>({
+      name:row.querySelector('.item-name').value.trim(), qty:number(row.querySelector('.item-qty').value), price:number(row.querySelector('.item-price').value)
+    })).filter(x=>x.name||x.price);
+  }
+
+  function calc(){
+    $$('.item-card').forEach(row=>{ const q=number(row.querySelector('.item-qty').value),p=number(row.querySelector('.item-price').value);row.querySelector('.item-amount').textContent=won(q*p); });
+    const base=collectItems().reduce((s,x)=>s+x.qty*x.price,0);let supply=base,vat=0,grand=base;
+    if(els.vatMode.value==='separate'){vat=base*.1;grand=base+vat;}
+    if(els.vatMode.value==='included'){supply=base/1.1;vat=base-supply;grand=base;}
+    $('#supplyTotal').textContent=won(supply);$('#vatTotal').textContent=won(vat);$('#grandTotal').textContent=won(grand);
+    return {supply,vat,grand};
+  }
+
+  function companyFromForm(){ return {name:$('#companyName').value.trim(),owner:$('#companyOwner').value.trim(),biz:$('#companyBiz').value.trim(),address:$('#companyAddress').value.trim(),phone:$('#companyPhone').value.trim(),account:$('#companyAccount').value.trim(),stamp:pendingStamp||''}; }
+  function loadCompanyIntoForm(){ const c=readJson(KEYS.company,{});$('#companyName').value=c.name||'';$('#companyOwner').value=c.owner||'';$('#companyBiz').value=c.biz||'';$('#companyAddress').value=c.address||'';$('#companyPhone').value=c.phone||'';$('#companyAccount').value=c.account||'';pendingStamp=c.stamp||'';renderStampPreview();return c; }
+  function validCompany(c){return !!(c.name&&c.owner&&c.address&&/^\d{3}-\d{2}-\d{5}$/.test(c.biz));}
+  function updateStampOption(){ const c=readJson(KEYS.company,{});const wasHidden=els.stampOption.hidden;els.stampOption.hidden=!c.stamp;if(!c.stamp)els.useStamp.checked=false;else if(wasHidden)els.useStamp.checked=true; }
+  function renderStampPreview(){ const box=$('#stampPreview');if(pendingStamp){box.innerHTML=`<img src="${pendingStamp}" alt="직인">`;$('#stampRemoveBtn').style.display='block';}else{box.textContent='직인 없음';$('#stampRemoveBtn').style.display='none';} }
+
+  async function fileToDataUrl(file,maxSide=1200,quality=.88,forcePng=false){
+    const src=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)});
+    const img=await loadImage(src);let w=img.naturalWidth,h=img.naturalHeight;const scale=Math.min(1,maxSide/Math.max(w,h));w=Math.max(1,Math.round(w*scale));h=Math.max(1,Math.round(h*scale));
+    const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#fff';if(!forcePng)x.fillRect(0,0,w,h);x.drawImage(img,0,0,w,h);
+    return c.toDataURL(forcePng?'image/png':'image/jpeg',quality);
+  }
+  function loadImage(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src;});}
+
+  function renderPhotos(){ els.photoPreview.innerHTML='';photos.forEach((p,i)=>{const d=document.createElement('div');d.className='photo';d.innerHTML=`<img src="${p.src}" alt="첨부 사진"><button type="button">×</button>`;d.querySelector('button').onclick=()=>{photos.splice(i,1);renderPhotos()};els.photoPreview.appendChild(d);}); }
+
+  function buildData(){
+    const company=readJson(KEYS.company,{});if(!validCompany(company)){alert('내 업체 정보와 사업자등록번호를 먼저 입력해주세요.');loadCompanyIntoForm();els.companyDialog.showModal();return null;}
+    const customer=els.customerName.value.trim();if(!customer){alert('받는 사람 이름 또는 업체명을 입력해주세요.');els.customerName.focus();return null;}
+    const items=collectItems().filter(x=>x.name&&x.qty>0);if(!items.length){alert('품목을 한 개 이상 입력해주세요.');return null;}
+    return {docNo:currentDocNo,type:selectedDoc,date:els.docDate.value||today(),company,customer:{name:customer,phone:els.customerPhone.value.trim(),biz:els.customerBiz.value.trim(),address:els.customerAddress.value.trim()},items,totals:calc(),vatMode:els.vatMode.value,memo:els.memo.value.trim(),useStamp:!!(company.stamp&&els.useStamp.checked),photos:[...photos]};
+  }
+
+  function saveHistory(data){
+    const history=readJson(KEYS.history,[]);const entry={...data,photos:[],company:{...data.company,stamp:''},savedAt:new Date().toISOString()};
+    const idx=history.findIndex(x=>x.docNo===entry.docNo);if(idx>=0)history[idx]=entry;else history.unshift(entry);writeJson(KEYS.history,history.slice(0,300));updateHistoryCount();
+  }
+  function updateHistoryCount(){const n=readJson(KEYS.history,[]).length;$('#historyCount').textContent=`저장된 문서 ${n}건`;}
+
+  // ---------- Canvas document rendering ----------
+  const PAGE_W=1240,PAGE_H=1754,M=86;
+  function setupCanvas(){const c=document.createElement('canvas');c.width=PAGE_W;c.height=PAGE_H;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,PAGE_W,PAGE_H);x.textBaseline='middle';return {c,x};}
+  function line(ctx,x1,y1,x2,y2,w=1,color='#111827'){ctx.save();ctx.strokeStyle=color;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.restore();}
+  function rect(ctx,x,y,w,h,fill=null,stroke='#111827',lw=1){ctx.save();if(fill){ctx.fillStyle=fill;ctx.fillRect(x,y,w,h)}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.strokeRect(x,y,w,h)}ctx.restore();}
+  function text(ctx,txt,x,y,opt={}){ctx.save();ctx.font=`${opt.weight||400} ${opt.size||25}px "Malgun Gothic","Apple SD Gothic Neo",sans-serif`;ctx.fillStyle=opt.color||'#111827';ctx.textAlign=opt.align||'left';ctx.textBaseline=opt.baseline||'middle';ctx.fillText(String(txt??''),x,y,opt.maxWidth);ctx.restore();}
+  function wrapLines(ctx,txt,maxWidth,font){ctx.save();ctx.font=font;const words=String(txt||'').split(/\s+/);const lines=[];let cur='';for(const w of words){const t=cur?cur+' '+w:w;if(ctx.measureText(t).width<=maxWidth||!cur)cur=t;else{lines.push(cur);cur=w;}}if(cur)lines.push(cur);ctx.restore();return lines;}
+  function drawFitImage(ctx,img,x,y,w,h){const r=Math.min(w/img.naturalWidth,h/img.naturalHeight);const dw=img.naturalWidth*r,dh=img.naturalHeight*r;ctx.drawImage(img,x+(w-dw)/2,y+(h-dh)/2,dw,dh);}
+  function drawLabelLines(ctx,lines,x,y,maxWidth,lineH=34){let cy=y;for(const item of lines){text(ctx,item.label,x,cy,{size:22,weight:700,color:'#4b5563'});const labW=ctx.measureText?0:0;text(ctx,item.value,x+item.offset,cy,{size:23,maxWidth:maxWidth-item.offset});cy+=lineH;}return cy;}
+
+  async function renderDocumentPages(data){
+    const pages=[];const chunks=[];const perPage=12;for(let i=0;i<data.items.length;i+=perPage)chunks.push(data.items.slice(i,i+perPage));
+    const stampImg=data.useStamp?await loadImage(data.company.stamp).catch(()=>null):null;
+    for(let pi=0;pi<chunks.length;pi++){
+      const {c,x}=setupCanvas();const first=pi===0,last=pi===chunks.length-1;
+      text(x,data.type,PAGE_W/2,100,{size:50,weight:900,align:'center'});
+      text(x,`문서번호  ${data.docNo}`,M,160,{size:20,color:'#4b5563'});text(x,`작성일  ${data.date}`,PAGE_W-M,160,{size:20,color:'#4b5563',align:'right'});
+      let tableY=205;
+      if(first){
+        const gap=22,boxW=(PAGE_W-M*2-gap)/2,boxH=245,leftX=M,rightX=M+boxW+gap;
+        rect(x,leftX,205,boxW,boxH,'#fff','#111827',2);rect(x,rightX,205,boxW,boxH,'#fff','#111827',2);
+        text(x,'받는 사람',leftX+22,237,{size:25,weight:900});line(x,leftX+20,262,leftX+boxW-20,262,1,'#d1d5db');
+        let cy=296;text(x,data.customer.name,leftX+22,cy,{size:28,weight:800,maxWidth:boxW-44});cy+=42;
+        if(data.customer.phone){text(x,`연락처  ${data.customer.phone}`,leftX+22,cy,{size:22});cy+=34;}
+        if(data.customer.biz){text(x,`사업자번호  ${data.customer.biz}`,leftX+22,cy,{size:22});cy+=34;}
+        if(data.customer.address){const ls=wrapLines(x,`주소  ${data.customer.address}`,boxW-44,'400 22px "Malgun Gothic"').slice(0,2);ls.forEach((l,j)=>text(x,l,leftX+22,cy+j*30,{size:22}));}
+
+        text(x,data.company.name,rightX+22,237,{size:29,weight:900,maxWidth:boxW-44});line(x,rightX+20,262,rightX+boxW-20,262,1,'#d1d5db');
+        let sy=296;text(x,`대표자  ${data.company.owner}`,rightX+22,sy,{size:23});sy+=34;text(x,`사업자번호  ${data.company.biz}`,rightX+22,sy,{size:23,weight:800});sy+=34;
+        const addr=wrapLines(x,`주소  ${data.company.address}`,boxW-44,'400 22px "Malgun Gothic"').slice(0,2);addr.forEach((l,j)=>text(x,l,rightX+22,sy+j*30,{size:22}));sy+=addr.length*30;
+        if(data.company.phone){text(x,`전화  ${data.company.phone}`,rightX+22,sy,{size:22});sy+=32;}
+        if(data.company.account)text(x,`계좌  ${data.company.account}`,rightX+22,sy,{size:22});
+        if(stampImg){x.save();x.globalAlpha=.95;drawFitImage(x,stampImg,rightX+boxW-145,276,112,112);x.restore();}
+        tableY=482;
+      }else{
+        text(x,`${data.type} 계속`,M,210,{size:22,weight:800,color:'#4b5563'});tableY=250;
+      }
+
+      const cols=[M,M+70,M+650,M+790,M+965,PAGE_W-M];const headH=56,rowH=62;
+      rect(x,M,tableY,PAGE_W-2*M,headH,'#f3f4f6','#111827',2);
+      for(const cx of cols)line(x,cx,tableY,cx,tableY+headH+rowH*chunks[pi].length,1,'#111827');
+      line(x,M,tableY+headH,PAGE_W-M,tableY+headH,1,'#111827');
+      const heads=[['번호',(cols[0]+cols[1])/2],['품목',(cols[1]+cols[2])/2],['수량',(cols[2]+cols[3])/2],['단가',(cols[3]+cols[4])/2],['금액',(cols[4]+cols[5])/2]];
+      heads.forEach(h=>text(x,h[0],h[1],tableY+headH/2,{size:22,weight:900,align:'center'}));
+      chunks[pi].forEach((it,ri)=>{
+        const y=tableY+headH+ri*rowH;line(x,M,y+rowH,PAGE_W-M,y+rowH,1,'#9ca3af');
+        text(x,pi*perPage+ri+1,(cols[0]+cols[1])/2,y+rowH/2,{size:22,align:'center'});
+        const itemLines=wrapLines(x,it.name,cols[2]-cols[1]-24,'400 22px "Malgun Gothic"').slice(0,2);itemLines.forEach((l,j)=>text(x,l,cols[1]+12,y+rowH/2+(j-(itemLines.length-1)/2)*24,{size:22}));
+        text(x,it.qty.toLocaleString('ko-KR'),(cols[2]+cols[3])/2,y+rowH/2,{size:22,align:'center'});
+        text(x,Math.round(it.price).toLocaleString('ko-KR'),cols[4]-12,y+rowH/2,{size:22,align:'right'});
+        text(x,Math.round(it.qty*it.price).toLocaleString('ko-KR'),cols[5]-12,y+rowH/2,{size:22,weight:700,align:'right'});
+      });
+      let yAfter=tableY+headH+rowH*chunks[pi].length;
+      if(last){
+        const sw=420,sh=162,sx=PAGE_W-M-sw,sy=yAfter+24;rect(x,sx,sy,sw,sh,'#fff','#111827',2);
+        const rows=[['공급가액',data.totals.supply],['부가세',data.totals.vat],['합계',data.totals.grand]];rows.forEach((r,i)=>{if(i)line(x,sx,sy+i*54,sx+sw,sy+i*54,1,'#9ca3af');line(x,sx+155,sy,sx+155,sy+sh,1,'#9ca3af');text(x,r[0],sx+77,sy+i*54+27,{size:21,weight:i===2?900:700,align:'center'});text(x,won(r[1]),sx+sw-14,sy+i*54+27,{size:i===2?24:21,weight:i===2?900:700,align:'right'});});
+        const vatText=data.vatMode==='included'?'부가세 포함':data.vatMode==='separate'?'부가세 별도':'부가세 없음';text(x,vatText,sx,sy+sh+24,{size:18,color:'#6b7280'});
+        if(data.memo){const my=sy+sh+62;text(x,'메모',M,my,{size:23,weight:900});const lines=wrapLines(x,data.memo,PAGE_W-2*M,'400 21px "Malgun Gothic"').slice(0,5);lines.forEach((l,i)=>text(x,l,M,my+36+i*29,{size:21}));}
+      }
+      text(x,`${data.company.name} · ${data.type}`,PAGE_W-M,PAGE_H-48,{size:17,color:'#6b7280',align:'right'});
+      pages.push(c);
+    }
+    if(data.photos.length){
+      for(let i=0;i<data.photos.length;i+=4){
+        const {c,x}=setupCanvas();text(x,'첨부 사진',PAGE_W/2,90,{size:43,weight:900,align:'center'});text(x,`${data.type}  ${data.docNo}`,M,145,{size:19,color:'#6b7280'});
+        const batch=data.photos.slice(i,i+4);const gap=28,top=190,cellW=(PAGE_W-2*M-gap)/2,cellH=690;
+        for(let j=0;j<batch.length;j++){
+          const col=j%2,row=Math.floor(j/2),px=M+col*(cellW+gap),py=top+row*(cellH+gap);rect(x,px,py,cellW,cellH,'#fff','#d1d5db',2);
+          const img=await loadImage(batch[j].src).catch(()=>null);if(img)drawFitImage(x,img,px+14,py+14,cellW-28,cellH-58);text(x,`사진 ${i+j+1}`,px+14,py+cellH-24,{size:18,color:'#4b5563'});
+        }
+        text(x,`${data.company.name} · 첨부 사진`,PAGE_W-M,PAGE_H-48,{size:17,color:'#6b7280',align:'right'});pages.push(c);
+      }
+    }
+    return pages;
+  }
+
+  // ---------- Minimal image PDF writer ----------
+  const enc=s=>new TextEncoder().encode(s);
+  function concatBytes(parts){const len=parts.reduce((s,p)=>s+p.length,0),out=new Uint8Array(len);let o=0;for(const p of parts){out.set(p,o);o+=p.length;}return out;}
+  function dataUrlBytes(url){const b=atob(url.split(',')[1]);const a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;}
+  function buildPdf(canvases){
+    const images=canvases.map(c=>({bytes:dataUrlBytes(c.toDataURL('image/jpeg',.92)),w:c.width,h:c.height}));
+    const objects=[];const pageIds=[];for(let i=0;i<images.length;i++)pageIds.push(3+i*3);
+    objects[1]=enc('<< /Type /Catalog /Pages 2 0 R >>');objects[2]=enc(`<< /Type /Pages /Kids [${pageIds.map(id=>id+' 0 R').join(' ')}] /Count ${images.length} >>`);
+    images.forEach((im,i)=>{const pageId=3+i*3,contentId=pageId+1,imageId=pageId+2;objects[pageId]=enc(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Im0 ${imageId} 0 R >> >> /Contents ${contentId} 0 R >>`);const cs='q\n595.28 0 0 841.89 0 0 cm\n/Im0 Do\nQ\n';objects[contentId]=concatBytes([enc(`<< /Length ${cs.length} >>\nstream\n`),enc(cs),enc('endstream')]);objects[imageId]=concatBytes([enc(`<< /Type /XObject /Subtype /Image /Width ${im.w} /Height ${im.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.bytes.length} >>\nstream\n`),im.bytes,enc('\nendstream')]);});
+    const chunks=[concatBytes([enc('%PDF-1.4\n%'),new Uint8Array([226,227,207,211]),enc('\n')])];const offsets=[0];let offset=chunks[0].length;for(let id=1;id<objects.length;id++){offsets[id]=offset;const obj=concatBytes([enc(`${id} 0 obj\n`),objects[id],enc('\nendobj\n')]);chunks.push(obj);offset+=obj.length;}
+    const xrefOffset=offset;let xref=`xref\n0 ${objects.length}\n0000000000 65535 f \n`;for(let id=1;id<objects.length;id++)xref+=`${String(offsets[id]).padStart(10,'0')} 00000 n \n`;xref+=`trailer\n<< /Size ${objects.length} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+    chunks.push(enc(xref));return new Blob([concatBytes(chunks)],{type:'application/pdf'});
+  }
+  function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);}
+
+  // ---------- Minimal XLSX writer ----------
+  const crcTable=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?0xedb88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+  function crc32(bytes){let c=0xffffffff;for(const b of bytes)c=crcTable[(c^b)&255]^(c>>>8);return (c^0xffffffff)>>>0;}
+  function u16(n){return new Uint8Array([n&255,(n>>>8)&255]);}function u32(n){return new Uint8Array([n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]);}
+  function dosDateTime(d=new Date()){const time=(d.getHours()<<11)|(d.getMinutes()<<5)|Math.floor(d.getSeconds()/2);const date=((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate();return {time,date};}
+  function zipStore(files){
+    const locals=[],centrals=[];let offset=0;const dt=dosDateTime();
+    for(const f of files){const name=enc(f.name),data=typeof f.data==='string'?enc(f.data):f.data,crc=crc32(data);const local=concatBytes([u32(0x04034b50),u16(20),u16(0x0800),u16(0),u16(dt.time),u16(dt.date),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0),name,data]);locals.push(local);const central=concatBytes([u32(0x02014b50),u16(20),u16(20),u16(0x0800),u16(0),u16(dt.time),u16(dt.date),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(offset),name]);centrals.push(central);offset+=local.length;}
+    const centralData=concatBytes(centrals),localData=concatBytes(locals);const end=concatBytes([u32(0x06054b50),u16(0),u16(0),u16(files.length),u16(files.length),u32(centralData.length),u32(localData.length),u16(0)]);return new Blob([localData,centralData,end],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  }
+  function colName(n){let s='';while(n){n--;s=String.fromCharCode(65+n%26)+s;n=Math.floor(n/26);}return s;}
+  function makeSheetXml(rows,headerRows=[]){let xml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="1" width="17" customWidth="1"/><col min="2" max="2" width="15" customWidth="1"/><col min="3" max="3" width="18" customWidth="1"/><col min="4" max="20" width="16" customWidth="1"/></cols><sheetData>';
+    rows.forEach((row,ri)=>{xml+=`<row r="${ri+1}">`;row.forEach((v,ci)=>{if(v===null||v===undefined||v==='')return;const ref=colName(ci+1)+(ri+1),style=headerRows.includes(ri)?' s="1"':typeof v==='number'?' s="2"':'';if(typeof v==='number')xml+=`<c r="${ref}"${style}><v>${v}</v></c>`;else xml+=`<c r="${ref}" t="inlineStr"${style}><is><t>${escapeXml(v)}</t></is></c>`;});xml+='</row>';});return xml+'</sheetData></worksheet>';
+  }
+  function makeXlsx(rows,headerRows=[0]){
+    const sheet=makeSheetXml(rows,headerRows);const files=[
+      {name:'[Content_Types].xml',data:'<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'},
+      {name:'_rels/.rels',data:'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'},
+      {name:'xl/workbook.xml',data:'<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="문서내역" sheetId="1" r:id="rId1"/></sheets></workbook>'},
+      {name:'xl/_rels/workbook.xml.rels',data:'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'},
+      {name:'xl/styles.xml',data:'<?xml version="1.0" encoding="UTF-8"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="맑은 고딕"/></font><font><b/><sz val="11"/><name val="맑은 고딕"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf fontId="0" fillId="0" borderId="0" xfId="0"/><xf fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf fontId="0" fillId="0" borderId="0" xfId="0" numFmtId="3" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'},
+      {name:'xl/worksheets/sheet1.xml',data:sheet}
+    ];return zipStore(files);
+  }
+  function currentExcelRows(data){
+    const r=[['문서종류',data.type],['문서번호',data.docNo],['작성일',data.date],['보내는 업체',data.company.name],['사업자등록번호',data.company.biz],['받는 사람',data.customer.name],['받는 사람 사업자번호',data.customer.biz||''],[],['번호','품목','수량','단가','금액']];
+    data.items.forEach((x,i)=>r.push([i+1,x.name,x.qty,x.price,x.qty*x.price]));r.push([],['공급가액',data.totals.supply],['부가세',data.totals.vat],['합계',data.totals.grand],['첨부사진 수',data.photos.length],['메모',data.memo||'']);return r;
+  }
+  function historyExcelRows(){const history=readJson(KEYS.history,[]),rows=[['문서번호','작성일','문서종류','거래처','거래처 사업자번호','품목','수량','단가','금액','공급가액','부가세','합계']];history.forEach(d=>d.items.forEach(it=>rows.push([d.docNo,d.date,d.type,d.customer.name,d.customer.biz||'',it.name,it.qty,it.price,it.qty*it.price,d.totals.supply,d.totals.vat,d.totals.grand])));return rows;}
+
+  // ---------- XLSX/CSV item import ----------
+  function parseCsv(text){const rows=[];let row=[],cell='',q=false;for(let i=0;i<text.length;i++){const ch=text[i];if(q){if(ch==='"'&&text[i+1]==='"'){cell+='"';i++;}else if(ch==='"')q=false;else cell+=ch;}else if(ch==='"')q=true;else if(ch===','){row.push(cell);cell='';}else if(ch==='\n'){row.push(cell.replace(/\r$/,''));rows.push(row);row=[];cell='';}else cell+=ch;}if(cell||row.length){row.push(cell);rows.push(row);}return rows;}
+  function findSig(bytes,sig,start=0){for(let i=start;i<=bytes.length-4;i++)if(bytes[i]===sig[0]&&bytes[i+1]===sig[1]&&bytes[i+2]===sig[2]&&bytes[i+3]===sig[3])return i;return -1;}
+  function dvU16(a,o){return a[o]|(a[o+1]<<8)}function dvU32(a,o){return (a[o]|(a[o+1]<<8)|(a[o+2]<<16)|(a[o+3]<<24))>>>0}
+  async function unzipEntries(buf){const b=new Uint8Array(buf),out={};let p=0;while(true){p=findSig(b,[0x50,0x4b,0x03,0x04],p);if(p<0)break;const method=dvU16(b,p+8),cs=dvU32(b,p+18),nameLen=dvU16(b,p+26),extraLen=dvU16(b,p+28),name=new TextDecoder().decode(b.slice(p+30,p+30+nameLen)),start=p+30+nameLen+extraLen,comp=b.slice(start,start+cs);let data;if(method===0)data=comp;else if(method===8&&'DecompressionStream'in window){const stream=new Blob([comp]).stream().pipeThrough(new DecompressionStream('deflate-raw'));data=new Uint8Array(await new Response(stream).arrayBuffer());}else throw new Error('지원하지 않는 엑셀 압축 방식입니다.');out[name]=data;p=start+cs;}return out;}
+  async function xlsxRows(file){const entries=await unzipEntries(await file.arrayBuffer());const dec=new TextDecoder('utf-8');let shared=[];if(entries['xl/sharedStrings.xml']){const doc=new DOMParser().parseFromString(dec.decode(entries['xl/sharedStrings.xml']),'text/xml');shared=[...doc.querySelectorAll('si')].map(si=>[...si.querySelectorAll('t')].map(t=>t.textContent).join(''));}const sheetKey=Object.keys(entries).find(k=>/^xl\/worksheets\/sheet\d+\.xml$/.test(k));if(!sheetKey)throw new Error('품목 시트를 찾을 수 없습니다.');const doc=new DOMParser().parseFromString(dec.decode(entries[sheetKey]),'text/xml');const rows=[];for(const r of [...doc.querySelectorAll('sheetData row')]){const arr=[];for(const c of [...r.querySelectorAll('c')]){const ref=c.getAttribute('r')||'A1',letters=(ref.match(/[A-Z]+/)||['A'])[0];let col=0;for(const ch of letters)col=col*26+ch.charCodeAt(0)-64;const t=c.getAttribute('t');let v='';if(t==='inlineStr')v=[...c.querySelectorAll('is t')].map(n=>n.textContent).join('');else{v=c.querySelector('v')?.textContent||'';if(t==='s')v=shared[Number(v)]??v;}arr[col-1]=v;}rows.push(arr);}return rows;}
+  function importedItemsFromRows(rows){if(!rows.length)return[];const nameKeys=['품목명','품목','item','name','항목'];const priceKeys=['기본단가','단가','가격','price'];let hi=rows.slice(0,30).findIndex(r=>{const h=r.map(x=>String(x||'').trim().toLowerCase());return h.some(v=>nameKeys.includes(v))&&h.some(v=>priceKeys.includes(v));});if(hi<0)hi=0;const header=rows[hi].map(x=>String(x||'').trim().toLowerCase());let ni=header.findIndex(h=>nameKeys.includes(h)),pi=header.findIndex(h=>priceKeys.includes(h));if(ni<0)ni=0;if(pi<0)pi=1;const data=[];for(const r of rows.slice(hi+1)){if(!r.some(v=>String(v??'').trim()!==''))break;const name=String(r[ni]||'').trim();if(!name||/^\d+(?:[.,]\d+)?$/.test(name))continue;data.push({name,price:number(r[pi])});}return data;}
+
+  function renderSavedItems(){const list=readJson(KEYS.items,[]),box=$('#savedItemsList');box.innerHTML='';if(!list.length){box.innerHTML='<div class="empty">저장된 품목이 없습니다.<br>현재 품목을 저장하거나 엑셀로 불러오세요.</div>';return;}list.forEach((it,idx)=>{const d=document.createElement('div');d.className='saved-item';d.innerHTML=`<div><strong>${it.name.replace(/[<>]/g,'')}</strong><span>${won(it.price)}</span></div><button type="button">추가</button>`;d.querySelector('button').onclick=()=>{addItem({name:it.name,qty:1,price:it.price});toast('품목을 추가했습니다');};d.oncontextmenu=e=>{e.preventDefault();if(confirm(`'${it.name}' 품목을 지울까요?`)){list.splice(idx,1);writeJson(KEYS.items,list);renderSavedItems();}};box.appendChild(d);});}
+
+  async function makePdf(){const data=buildData();if(!data)return;setLoading(true,'PDF를 만들고 있습니다');try{const pages=await renderDocumentPages(data);const blob=buildPdf(pages);saveHistory(data);const fileName=`${safeName(data.type)}_${safeName(data.customer.name)}_${data.date}.pdf`;const file=new File([blob],fileName,{type:'application/pdf'});if(navigator.share&&navigator.canShare?.({files:[file]})){try{await navigator.share({title:`${data.type} - ${data.customer.name}`,files:[file]});}catch(e){if(e.name!=='AbortError')downloadBlob(blob,fileName);}}else downloadBlob(blob,fileName);toast('PDF를 만들었습니다');}catch(e){console.error(e);alert('PDF를 만드는 중 문제가 생겼습니다.\n'+e.message);}finally{setLoading(false);}}
+  function makeCurrentExcel(){const data=buildData();if(!data)return;const blob=makeXlsx(currentExcelRows(data),[8]);saveHistory(data);downloadBlob(blob,`${safeName(data.type)}_${safeName(data.customer.name)}_${data.date}.xlsx`);toast('엑셀 파일을 만들었습니다');}
+
+  // ---------- events ----------
+  $$('#docButtons .docbtn').forEach(btn=>btn.onclick=()=>{$$('#docButtons .docbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');selectedDoc=btn.dataset.doc;});
+  $('#addItem').onclick=()=>addItem();els.vatMode.onchange=calc;
+  $('#photoBtn').onclick=()=>els.photoInput.click();els.photoInput.onchange=async e=>{setLoading(true,'사진을 준비하고 있습니다');try{for(const f of [...e.target.files]){if(photos.length>=12)break;photos.push({src:await fileToDataUrl(f,1800,.86,false)});}renderPhotos();}finally{setLoading(false);e.target.value='';}};
+  $('#companyBtn').onclick=()=>{loadCompanyIntoForm();els.companyDialog.showModal();};$('#closeCompany').onclick=()=>els.companyDialog.close();
+  $('#stampSelectBtn').onclick=()=>$('#stampInput').click();$('#stampInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;setLoading(true,'직인을 저장하고 있습니다');try{pendingStamp=await fileToDataUrl(f,700,.95,true);renderStampPreview();}finally{setLoading(false);e.target.value='';}};$('#stampRemoveBtn').onclick=()=>{pendingStamp='';renderStampPreview();};
+  $('#saveCompany').onclick=()=>{const c=companyFromForm();if(!c.name||!c.owner||!c.address){alert('상호, 대표자명, 주소를 입력해주세요.');return;}if(!/^\d{3}-\d{2}-\d{5}$/.test(c.biz)){alert('사업자등록번호 10자리를 정확히 입력해주세요.');return;}try{writeJson(KEYS.company,c);els.companyDialog.close();updateStampOption();toast('업체 정보를 저장했습니다');}catch{alert('직인 이미지가 너무 큽니다. 더 작은 이미지를 선택해주세요.');}};
+  $('#menuBtn').onclick=()=>{updateHistoryCount();els.menuDialog.showModal();};$('#closeMenu').onclick=()=>els.menuDialog.close();
+  $('#savedItemsBtn').onclick=()=>{renderSavedItems();els.savedItemsDialog.showModal();};$('#closeSavedItems').onclick=()=>els.savedItemsDialog.close();
+  $('#saveCurrentItems').onclick=()=>{const cur=collectItems().filter(x=>x.name);if(!cur.length){alert('먼저 품목을 입력해주세요.');return;}const list=readJson(KEYS.items,[]);cur.forEach(x=>{const old=list.find(i=>i.name===x.name);if(old)old.price=x.price;else list.push({name:x.name,price:x.price});});writeJson(KEYS.items,list.slice(0,500));renderSavedItems();toast('자주 쓰는 품목으로 저장했습니다');};
+  $('#pdfBtn').onclick=makePdf;$('#excelBtn').onclick=makeCurrentExcel;
+  $('#allHistoryExcel').onclick=()=>{const rows=historyExcelRows();if(rows.length===1){alert('저장된 문서가 없습니다.');return;}downloadBlob(makeXlsx(rows,[0]),`문서한장_전체내역_${today()}.xlsx`);toast('전체 내역을 만들었습니다');};
+  $('#importItemsBtn').onclick=()=>$('#itemsFileInput').click();$('#itemsFileInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;setLoading(true,'품목을 불러오고 있습니다');try{let rows;if(f.name.toLowerCase().endsWith('.csv'))rows=parseCsv(await f.text());else rows=await xlsxRows(f);const imported=importedItemsFromRows(rows);if(!imported.length)throw new Error('품목명과 단가 열을 찾지 못했습니다.');const list=readJson(KEYS.items,[]);imported.forEach(x=>{const old=list.find(i=>i.name===x.name);if(old)old.price=x.price;else list.push(x);});writeJson(KEYS.items,list.slice(0,500));toast(`${imported.length}개 품목을 불러왔습니다`);}catch(err){alert('품목을 불러오지 못했습니다.\n첫 줄에 품목명, 단가가 있는 엑셀 또는 CSV를 사용해주세요.\n'+err.message);}finally{setLoading(false);e.target.value='';}};
+  $('#backupBtn').onclick=()=>{const data={version:2,exportedAt:new Date().toISOString(),company:readJson(KEYS.company,{}),items:readJson(KEYS.items,[]),history:readJson(KEYS.history,[])};downloadBlob(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),`문서한장_백업_${today()}.json`);};
+  $('#restoreBtn').onclick=()=>$('#backupFileInput').click();$('#backupFileInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d.company)throw new Error('올바른 백업 파일이 아닙니다.');writeJson(KEYS.company,d.company||{});writeJson(KEYS.items,d.items||[]);writeJson(KEYS.history,d.history||[]);updateStampOption();updateHistoryCount();toast('백업을 불러왔습니다');}catch(err){alert('백업 파일을 읽지 못했습니다.\n'+err.message);}finally{e.target.value='';}};
+  $('#clearDataBtn').onclick=()=>{if(!confirm('업체정보, 직인, 품목, 거래내역을 모두 지울까요?'))return;Object.values(KEYS).forEach(k=>localStorage.removeItem(k));els.menuDialog.close();updateStampOption();updateHistoryCount();toast('저장정보를 모두 지웠습니다');setTimeout(()=>{loadCompanyIntoForm();els.companyDialog.showModal();},300);};
+  $('#resetBtn').onclick=()=>{if(!confirm('작성 중인 내용을 모두 지울까요?'))return;els.customerName.value='';els.customerPhone.value='';els.customerBiz.value='';els.customerAddress.value='';els.items.innerHTML='';addItem();els.memo.value='';els.vatMode.value='none';els.docDate.value=today();photos=[];renderPhotos();currentDocNo=makeDocNo();calc();toast('새 문서를 시작합니다');};
+
+  addItem();calc();updateStampOption();updateHistoryCount();const c=readJson(KEYS.company,{});if(!validCompany(c))setTimeout(()=>{loadCompanyIntoForm();els.companyDialog.showModal();},250);
+  if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

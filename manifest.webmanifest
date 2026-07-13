@@ -1,0 +1,13 @@
+{
+  "name": "문서한장",
+  "short_name": "문서한장",
+  "description": "견적서, 발주서, 거래명세표를 간편하게 만들고 사진과 직인을 넣는 앱",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f3f4f6",
+  "theme_color": "#111827",
+  "lang": "ko-KR",
+  "icons": [
+    {"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
