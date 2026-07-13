@@ -1,0 +1,57 @@
+name: 문서한장 Play 출시 AAB
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: 저장소 받기
+        uses: actions/checkout@v4
+      - name: 서명 비밀값 확인
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE_BASE64" || (echo 'ANDROID_KEYSTORE_BASE64가 없습니다.' && exit 1)
+          test -n "$STORE_PASSWORD" || (echo 'ANDROID_KEYSTORE_PASSWORD가 없습니다.' && exit 1)
+          test -n "$KEY_ALIAS" || (echo 'ANDROID_KEY_ALIAS가 없습니다.' && exit 1)
+          test -n "$KEY_PASSWORD" || (echo 'ANDROID_KEY_PASSWORD가 없습니다.' && exit 1)
+          echo "$KEYSTORE_BASE64" | base64 --decode > android-app/upload-key.jks
+          cat > android-app/keystore.properties <<PROPS
+          storeFile=upload-key.jks
+          storePassword=$STORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          PROPS
+      - name: Java 17 준비
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Android SDK 준비
+        uses: android-actions/setup-android@v3
+      - name: Android 16 SDK 설치
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Gradle 9.4.1 준비
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.4.1'
+      - name: Play 출시 AAB 빌드
+        run: gradle -p android-app clean bundleRelease
+      - name: 파일 이름 정리
+        run: |
+          mkdir -p output
+          cp android-app/app/build/outputs/bundle/release/app-release.aab 'output/문서한장-Play출시.aab'
+      - name: AAB 올리기
+        uses: actions/upload-artifact@v4
+        with:
+          name: munseohan-play-release
+          path: output/*
+          if-no-files-found: error
+          retention-days: 30
